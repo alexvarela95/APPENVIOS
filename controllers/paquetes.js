@@ -1,11 +1,43 @@
-const { Router } = require("express")
-//Uso { Router } para destructurar un objeto y solo obtener lo que ocupa de el
-const router = Router
-//Inicia la funcion router
+const {request, response} = require('express')
+const {ListadoPaquetes} = require('../models/paquetes')
+const {guardarDB, leerDB} = require('../helpers/gestorDB')
 
-    router.get('/', (req, res)=> res.send('GET Endpoint para Paquetes'))
-    router.post('/', (req, res)=> res.send('POST Endpoint para Paquetes'))
-    router.put('/', (req, res)=> res.send('PUT Endpoint para Paquetes'))
-    ro.delete('/', (req, res)=> res.send('DELETE Endpoint para Paquetes'))
+const getPaquetes = (req = request, res = response) => {
+    let lista = new ListadoPaquetes()
+    let datosJSON = leerDB('paquetes');
+    lista.cargarTareasFromArray(datosJSON)
+    res.json(lista.listadoArr)
+}
 
-    module.exports = router
+const postPaquetes = (req = request, res = response) => {
+    let lista = new ListadoPaquetes()
+    let datosJSON = leerDB('paquetes');
+    lista.cargarTareasFromArray(datosJSON)
+    lista.crearPaquetes(req.body)
+    guardarDB(lista.listadoArr,'paquetes')
+    res.send('Registro Creado Paquetes')
+}
+
+const putPaquetes = (req = request, res = response) => {
+    let lista = new ListadoPaquetes()
+    let datosJSON = leerDB('paquetes');
+    lista.cargarTareasFromArray(datosJSON)
+    const datos = lista.listadoArr.map(item =>
+        item.id == req.params.id ? {"id":item.id, ...req.body}: item
+        );
+    guardarDB(datos,'paquetes')
+    res.send('Registro Actualizado Paquetes')
+}
+
+const deletePaquetes = (req = request, res = response) => {
+    let lista = new ListadoPaquetes()
+    let datosJSON = leerDB('paquetes');
+    lista.cargarTareasFromArray(datosJSON)
+    let data = lista.listadoArr.filter(item => item.id !== req.params.id)
+    guardarDB(data, 'paquetes')
+    res.send('Registro Eliminado Paquetes')
+}
+
+module.exports = {
+    getPaquetes, postPaquetes, putPaquetes, deletePaquetes
+}
